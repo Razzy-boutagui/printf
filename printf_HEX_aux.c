@@ -2,7 +2,7 @@
 
 /**
  * printf_HEX_aux - to prints an hexgecimal number.
- * @num: number to print.
+ * @num: a number to print.
  * Return: counter.
  */
 int printf_HEX_aux(unsigned int num)
