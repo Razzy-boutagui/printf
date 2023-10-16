@@ -1,73 +1,94 @@
-#include <stdarg.h>
-#include <unistd.h>
+#include "main.h"
+#include <stdio.h>
 
 /**
- * _printf - Custom printf function.
- * @format: A format string containing conversion specifiers.
- * @...: Variable number of arguments for the conversion specifiers.
+ * _printf - Produces output according to a format.
+ * @format: A character string containing zero or more directives.
  *
  * Return: The number of characters printed (excluding the null byte).
  */
 int _printf(const char *format, ...)
 {
-    int char_count = 0;
-    va_list args;
+	va_list args;
+	int printed_chars = 0;
 
-    va_start(args, format);
+	va_start(args, format);
+	printed_chars = parse_format(format, args);
+	va_end(args);
 
-    while (format && format[char_count])
-    {
-        if (format[char_count] == '%')
-        {
-            char_count++; // Move past '%'
-
-            if (format[char_count] == 'c')
-            {
-                // Handle %c (character specifier)
-                char c = va_arg(args, int);
-                write(1, &c, 1); // Write the character
-                char_count++; // Move past 'c'
-            }
-            else if (format[char_count] == 's')
-            {
-                // Handle %s (string specifier)
-                char *s = va_arg(args, char *);
-                int len = 0;
-                while (s && s[len])
-                {
-                    len++;
-                }
-                write(1, s, len); // Write the string
-                char_count++; // Move past 's'
-            }
-            else if (format[char_count] == '%')
-            {
-                // Handle %%
-                write(1, "%", 1); // Write a single %
-                char_count++; // Move past the second '%'
-            }
-            // Add additional cases for other conversion specifiers here
-        }
-        else
-        {
-            // Handle regular characters, not conversion specifiers
-            write(1, &format[char_count], 1); // Write the character
-            char_count++;
-        }
-    }
-
-    va_end(args);
-
-    return char_count;
+	return (printed_chars);
 }
 
-int main(void)
+int parse_format(const char *format, va_list args)
 {
-    int len;
+	int i = 0, j = 0, count = 0;
+	char *buffer = malloc(sizeof(char) * 1024);
 
-    len = _printf("Let's try to printf a simple sentence.\n");
-    _printf("Length:[%d]\n", len);
-    len = _printf("Character:[%c]\n", 'H');
-    _printf("Length:[%d]\n", len);
-   
+	if (!buffer)
+		return (-1);
+
+	while (format && format[i])
+	{
+		if (format[i] != '%')
+		{
+			buffer[j] = format[i];
+			j++;
+			count++;
+		}
+		else if (format[i] == '%' && format[i + 1])
+		{
+			i++;
+			if (format[i] == 'c')
+				count += print_char(args, &buffer[j]);
+			else if (format[i] == 's')
+				count += print_str(args, &buffer[j]);
+			else if (format[i] == '%')
+				count += print_percent(&buffer[j]);
+			else if (format[i] == '\0')
+				return (-1);
+			else
+			{
+				buffer[j] = '%';
+				count++;
+				j++;
+				buffer[j] = format[i];
+				count++;
+			}
+		}
+		i++;
+		j++;
+	}
+	write(1, buffer, count);
+	free(buffer);
+	return (count);
+}
+
+int print_char(va_list args, char *buffer)
+{
+	*buffer = va_arg(args, int);
+	return (1);
+}
+
+int print_str(va_list args, char *buffer)
+{
+	char *str = va_arg(args, char *);
+	int i = 0;
+
+	if (!str)
+		str = "(null)";
+
+	while (str[i])
+	{
+		buffer[i] = str[i];
+		i++;
+	}
+
+	return (i);
+}
+
+int print_percent(char *buffer)
+{
+	*buffer = '%';
+	return (1);
+}
 
