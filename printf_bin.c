@@ -1,7 +1,7 @@
 #include "main.h"
 
 /**
- * printf_bin - prints a binary number.
+ * printf_bin - to prints a binary number.
  * @val: arguments.
  * Return: 1.
  */
