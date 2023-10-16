@@ -1,6 +1,6 @@
 #include "main.h"
 /**
- * printf_int - prints integer
+ * printf_int - to prints integer
  * @args: argument to print
  * Return: number of characters printed
  */
