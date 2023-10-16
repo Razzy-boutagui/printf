@@ -1,94 +1,59 @@
 #include "main.h"
-#include <stdio.h>
+#include <stdarg.h>
+#include <unistd.h>
 
 /**
- * _printf - Produces output according to a format.
- * @format: A character string containing zero or more directives.
+ * _printf - Produces output according to a format
+ * @format: A character string containing zero or more directives
+ * @...: The optional arguments that need to be formatted
  *
- * Return: The number of characters printed (excluding the null byte).
+ * Return: The number of characters printed (excluding the null byte)
  */
 int _printf(const char *format, ...)
 {
+	int count = 0;
 	va_list args;
-	int printed_chars = 0;
 
 	va_start(args, format);
-	printed_chars = parse_format(format, args);
-	va_end(args);
 
-	return (printed_chars);
-}
-
-int parse_format(const char *format, va_list args)
-{
-	int i = 0, j = 0, count = 0;
-	char *buffer = malloc(sizeof(char) * 1024);
-
-	if (!buffer)
-		return (-1);
-
-	while (format && format[i])
+	if (format && format[0])
 	{
-		if (format[i] != '%')
+		int i = 0;
+		int check = 0;
+
+		while (format[i])
 		{
-			buffer[j] = format[i];
-			j++;
-			count++;
-		}
-		else if (format[i] == '%' && format[i + 1])
-		{
-			i++;
-			if (format[i] == 'c')
-				count += print_char(args, &buffer[j]);
-			else if (format[i] == 's')
-				count += print_str(args, &buffer[j]);
-			else if (format[i] == '%')
-				count += print_percent(&buffer[j]);
-			else if (format[i] == '\0')
-				return (-1);
-			else
+			if (format[i] != '%')
 			{
-				buffer[j] = '%';
-				count++;
-				j++;
-				buffer[j] = format[i];
+				_putchar(format[i]);
 				count++;
 			}
+			else if (format[i] == '%')
+			{
+				check = i;
+				while (format[i] && format[i] != 'c' && format[i] != 's' &&
+				       format[i] != '%' && format[i] != 'd' && format[i] != 'i')
+					i++;
+
+				if (format[i] == 'c')
+					count += printf_char(va_arg(args, int));
+				else if (format[i] == 's')
+					count += printf_string(va_arg(args, char *));
+				else if (format[i] == 'd' || format[i] == 'i')
+					count += printf_int(va_arg(args, int));
+				else if (format[i] == '%')
+					count += _putchar('%');
+				else
+				{
+					_putchar('%');
+					count++;
+					i = check;
+				}
+			}
+			i++;
 		}
-		i++;
-		j++;
 	}
-	write(1, buffer, count);
-	free(buffer);
+	va_end(args);
 	return (count);
-}
-
-int print_char(va_list args, char *buffer)
-{
-	*buffer = va_arg(args, int);
-	return (1);
-}
-
-int print_str(va_list args, char *buffer)
-{
-	char *str = va_arg(args, char *);
-	int i = 0;
-
-	if (!str)
-		str = "(null)";
-
-	while (str[i])
-	{
-		buffer[i] = str[i];
-		i++;
-	}
-
-	return (i);
-}
-
-int print_percent(char *buffer)
-{
-	*buffer = '%';
-	return (1);
 }
 
